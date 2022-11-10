@@ -5,27 +5,31 @@ pragma solidity ^0.8.0;
 interface IMyERC20 {
     function mint(address to, uint256 amount) external;
 
-    function burn(uint256 amount) external;
-
-    function approve(address spender, uint256 amount) external returns (bool);
-
     function burnFrom(address account, uint256 amount) external;
-
-    function balanceOf(address account) external view returns (uint256);
 }
+
+interface IMyERC721 {}
 
 /* Errors */
 error EthTransferFailed();
-error insufficientBalance();
 
 contract TokenSale {
     uint256 private immutable ratio;
+    uint256 private immutable price;
     IMyERC20 private immutable paymentToken;
+    IMyERC721 private immutable nftContract;
 
     /* functions */
-    constructor(uint256 _ratio, address _paymentToken) {
+    constructor(
+        uint256 _ratio,
+        uint256 _price,
+        address _paymentToken,
+        address _nftContract
+    ) {
         ratio = _ratio;
+        price = _price;
         paymentToken = IMyERC20(_paymentToken);
+        nftContract = IMyERC721(_nftContract);
     }
 
     /**
@@ -37,12 +41,9 @@ contract TokenSale {
     }
 
     function sellToken(uint256 _amount) external {
-        if (paymentToken.balanceOf(msg.sender) < _amount)
-            revert insufficientBalance();
-
+        paymentToken.burnFrom(msg.sender, _amount);
         (bool sent, ) = payable(msg.sender).call{value: (_amount * ratio)}("");
         if (!sent) revert EthTransferFailed();
-        paymentToken.burn(_amount);
     }
 
     /* view/pure functions */

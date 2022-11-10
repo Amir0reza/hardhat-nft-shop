@@ -2,8 +2,7 @@ import { network } from "hardhat"
 import { DeployFunction } from "hardhat-deploy/dist/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import verify from "../utils/verify"
-
-export const TEST_RATIO: string = "1"
+import {TEST_RATIO, PRICE} from "../helper-input"
 
 const deployTokenSale: DeployFunction = async function (
     hre: HardhatRuntimeEnvironment
@@ -19,7 +18,8 @@ const deployTokenSale: DeployFunction = async function (
     log("Deploying Token Sale Contract and waiting for confirmations...")
 
     const myERC20 = await ethers.getContract("MyERC20")
-    const args = [TEST_RATIO, myERC20.address]
+    const myERC721 = await ethers.getContract("MyERC721")
+    const args = [TEST_RATIO, PRICE, myERC20.address, myERC721.address]
     const tokenSale = await deploy("TokenSale", {
         from: deployer,
         log: true,
